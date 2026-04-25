@@ -22,7 +22,7 @@ Je klant wil een platform bouwen voor het reserveren van sportterreinen (tennis,
 
 4. Availability
 
-5. Responsiveness
+5. Responsiveness - Hajar
 
 6. Usability
 
