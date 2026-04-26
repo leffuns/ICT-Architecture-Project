@@ -20,7 +20,7 @@ Je klant wil een platform bouwen voor het reserveren van sportterreinen (tennis,
 
 3. Scalability - Viktor
 
-4. Availability
+4. Availability - Jonas
 
 5. Responsiveness - Hajar
 
