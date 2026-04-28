@@ -24,6 +24,6 @@ Je klant wil een platform bouwen voor het reserveren van sportterreinen (tennis,
 
 5. Responsiveness - Hajar
 
-6. Usability
+6. Usability - Louis
 
 7. Integrity - Angeles
