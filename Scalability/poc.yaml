@@ -1,0 +1,92 @@
+# Deploy met: docker stack deploy -f poc.yaml poc
+# Deze stack bevat:
+#   - booking-api: Flask API met meerdere replicas
+#   - db: PostgreSQL database
+#   - loadtest: Container voor het uitvoeren van load tests
+
+version: "3.8"
+
+services:
+  # Booking API - De service die horizontaal geschaald wordt
+  booking-api:
+    image: poc-booking-api:latest
+    ports:
+      - "8080:5000"
+    deploy:
+      # Start met 3 replicas. Schaal op/af met:
+      #   docker service scale poc_booking-api=<N>
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 64M
+      # Health check: Swarm vervangt ongezonde containers automatisch
+      # Dit demonstreert self-healing, een bijkomend voordeel van orchestratie
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    environment:
+      - DATABASE_URL=postgresql://poc:poc@db:5432/bookings
+    networks:
+      - poc-network
+    depends_on:
+      - db
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: bookings
+      POSTGRES_USER: poc
+      POSTGRES_PASSWORD: poc
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U poc -d bookings"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - poc-network
+  # Test Container
+  loadtest:
+    image: poc-loadtest:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+      placement:
+        constraints:
+          - node.role == manager
+    environment:
+      - API_URL=http://booking-api:5000
+    networks:
+      - poc-network
+    depends_on:
+      - booking-api
+
+networks:
+  poc-network:
+    driver: overlay
+
+volumes:
+  db-data:
