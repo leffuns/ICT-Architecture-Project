@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  booking-api:
+    image: poc-booking-api:latest
+    ports:
+      - "8080:8080"
+    deploy:
+      replicas: 3 # We gebruiken 3 replica's op een 5-node cluster (3 managers, 2 workers)
+                  # Hierdoor blijft er altijd reserve-capaciteit over op de andere nodes.
+      restart_policy:
+        condition: any
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    environment:
+      - DB_HOST=db
+      - DB_USER=poc
+      - DB_PASSWORD=poc
+      - DB_NAME=bookings
+    networks:
+      - backend
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: bookings
+      MYSQL_USER: poc
+      MYSQL_PASSWORD: poc
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - backend
+
+volumes:
+  db-data:
+
+networks:
+  backend:
+    driver: overlay
