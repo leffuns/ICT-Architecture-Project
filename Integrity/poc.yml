@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  poc-integrity:
+    image: python:3.9-slim
+    deploy:
+      replicas: 1
+      # placement constraint tijdelijk weggehaald voor lokaal testen
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: tail -f /dev/null
