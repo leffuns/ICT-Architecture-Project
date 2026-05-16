@@ -1,0 +1,57 @@
+{
+  "realm": "sportbooking",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 300,
+  "roles": {
+    "realm": [
+      { "name": "end_user", "description": "Speler die slots boekt" },
+      { "name": "club_admin", "description": "Beheerder van een sportclub" },
+      { "name": "platform_admin", "description": "Interne staf" }
+    ]
+  },
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Speler",
+      "credentials": [{ "type": "password", "value": "alice123", "temporary": false }],
+      "realmRoles": ["end_user"]
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Clubbaas",
+      "credentials": [{ "type": "password", "value": "bob123", "temporary": false }],
+      "realmRoles": ["end_user", "club_admin"]
+    },
+    {
+      "username": "carol",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Carol",
+      "lastName": "Platform",
+      "credentials": [{ "type": "password", "value": "carol123", "temporary": false }],
+      "realmRoles": ["end_user", "platform_admin"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "sportbooking-app",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:*", "http://127.0.0.1:*"],
+      "webOrigins": ["*"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ]
+}
