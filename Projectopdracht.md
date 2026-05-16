@@ -1,4 +1,4 @@
-# Projectopdracht ICT Architecture
+# **Projectopdracht ICT Architecture**
 Groepsleden (2ITAI1):
 - Louis Boulez (*studentennummer*)
 - Jonas Lemmens (*studentennummer*)
@@ -10,7 +10,7 @@ Groepsleden (2ITAI1):
 "Veronderstel in de eerste plaats dat de afgestudeerde versie van je team deze opdracht productieklaar moet maken op een half jaar tijd. In je ADR's kan je vermelden welke beslissingen anders zouden zijn als je team en je budget groter / kleiner waren. Voor de vraag "wat de klant waarschijnlijk belangrijk vindt" kijk je naar de gegeven voorbeelden.<br>
 **Je klant wil een platform bouwen voor het reserveren van sportterreinen (tennis, padel, voetbal). Gebruikers moeten beschikbare tijdslots kunnen bekijken en betalen. Clubs moeten hun eigen beschikbaarheid kunnen beheren. Vergelijkbare voorbeelden zijn Playtomic.**"
 
-# Karakteristieken
+# Karakteristieken [1]
 De 7 belangrijkste karakteristieken van de applicatie worden in de tabel hieronder beschreven. Hierna volgt een korte beschrijving per karakteristiek.
 |Nr.|Karakteristiek|Expliciet?|Top3|
 |:---:|:---------------:|:----------:|:-----:|
@@ -23,16 +23,16 @@ De 7 belangrijkste karakteristieken van de applicatie worden in de tabel hierond
 |7|Scalability|Nee|Nee|
 
 **Securability**<br>
-De applicatie gaat met persoonlijke gegevens van gebruikers en betalingsgegevens in contact komen. De gebruikers zullen zowel normale sporters zijn die terreinen huren, maar ook clubs en verenigingen die vaak enorm rijk zijn. Als er een leak gebeurt, gaat alle vertrouwen van die clubs weg en faalt de hele business. Dit is waarom beveiliging van gegevens en autorisatie de nummer 1 karakteristiek is van het project.
+De applicatie gaat met persoonlijke gegevens van gebruikers en betalingsgegevens in contact komen. De gebruikers zijn zowel de sporters (die de terreinen huren) als de clubs en verenigingen. Als er een leak gebeurt, dan verliest onze klant alle vertrouwen van het publiek en faalt de hele business. Dit maakt de beveiliging van gegevens en autorisatie de belangrijkste karakteristiek van het project.
 
 **Availability**<br>
-Gebruikers moeten 24/7 kunnen boeken. Terreineneigenaars moeten ook 24/7 een rooster kunnen vinden van alle uitgehuurde tijdslots om verwarring te voorkomen. De applicatie moet streven naar altijd online te zijn met zo min mogelijke storingen voor updates of andere redenen.
+Gebruikers moeten 24/7 kunnen boeken. Terreineigenaars moeten ook 24/7 een rooster kunnen vinden van alle uitgehuurde tijdslots om verwarring te voorkomen. De applicatie moet streven naar altijd online te zijn met zo min mogelijke storingen voor updates of andere redenen.
 
 **Integrity**<br>
-Boekingen van terreinen moeten alleen maar gedaan worden door 1 gebruiker. Dubbele boekingen leiden tot ongewilde chaos en verdriet. Huren van terreinen en in tijdslots moet integraal werken om te voorkomen dat er iets misloopt. De applicatie moet ervoor zorgen dat als iets gehuurd wordt, die niet opnieuw gehuurd worden ook al gebeuren de twee pogingen op een korte termijn.
+Boekingen van terreinen moeten alleen maar gedaan worden door 1 gebruiker. Dubbele boekingen leiden tot ongewilde chaos en verdriet. Het reserveren van terreinen en tijdslots moet integraal werken om te voorkomen dat er iets misloopt. De applicatie moet ervoor zorgen dat al verhuurde terreinen niet opnieuw verhuurd kan worden - ook wanneer er twee pogingen op een korte termijn gebeuren.
 
 **Reliability**<br>
-Wanneer het gaat over het managen van tijdslots en tereinnen, is betrouwbaarheid belangrijk. Reservaties moeten verwerkt worden op een betrouwbare manier. Wanneer een tijdslot wordt betaald, dan moet die tijdslot inderdaad vrij zijn op het juiste terrein. 
+Wanneer het gaat over het managen van tijdslots en terreinen, is betrouwbaarheid belangrijk. Reservaties moeten verwerkt worden op een betrouwbare manier. Wanneer een boeking wordt betaald, dan moet dat terrein tijdens die tijdslot effectief vrij zijn. 
 
 **Responsiveness**<br>
 Wanneer een terrein wordt aangemaakt of gehuurd, moet het systeem alles kunnen processen op een snelle termijn. Anders kunnen klanten bij het huren tijdslots zien die eigenlijk niet open zijn. Dit kan planningen storen van die gebruikers.
@@ -88,7 +88,7 @@ Uit de vorige analyses stellen we de volgende logische componenten vast:
    - Authenticatie (Veilig inloggen op de juiste account.)
    - Autorisatie (Geschikte rechten hebben voor de accounts.)
    - Beheren van persoonlijke gegevens.
-   - Bijhouden van gebruiksgeschiedenis op het platform.
+   - Bijhouden van gebruikersgeschiedenis op het platform.
 
 2. **Terreinmanagement**<br>
    *Taken*:
@@ -118,6 +118,8 @@ Uit de vorige analyses stellen we de volgende logische componenten vast:
    - Clubbeheerders notificeren bij boekingen/annulaties.
 
 # Architecturale stijl
+We stellen onze ADR's op volgens de Nygard Template [2].
+
 ## **ADR 1:** Keuze van architecturale stijl
 
 ### Status
@@ -129,7 +131,12 @@ We bouwen een nieuw reserveringsplatform voor tennis-, padel- en voetbalterreine
 
 We zijn een team van 5 pas afgestudeerden en de applicatie moet binnen 6 maanden productieklaar zijn. De driving characteristics zijn; integrity, availability, reliability, securability, responsiveness, scalability en usability.
 
-Alle vijf stijlen, die we in de cursus behandelden, werden tegen elkaar afgewogen: gelaagde architectuur, modulaire monoliet, microkernel, microservices en event-driven.
+Alle vijf stijlen, die we in de cursus behandelden, werden tegen elkaar afgewogen:
+- Gelaagde architectuur
+- Modulaire monoliet
+- Microkernel
+- Microservices
+- Event-driven.
 
 ### Decision
 We kiezen voor een **modulaire monoliet** met vijf subdomeinen: 
@@ -139,25 +146,30 @@ We kiezen voor een **modulaire monoliet** met vijf subdomeinen:
 - Identity (users, clubs, rollen)
 - Notifications (mail, push)
 
-Code wordt eerst per subdomein georganiseerd. Elke module bezit haar eigen DB-schema in één gedeelde instantie. Verwijzingen tussen modules verlopen via expliciete ID-referenties, niet via cross-schema foreign keys. De applicatie wordt als één unit gedeployed.
+Elk subdomein heeft een duidelijk afgebakende verantwoordelijkheid en communiceert via interne API's. Elke module bezit haar eigen DB-schema in één gedeelde instantie. Verwijzingen tussen modules verlopen via expliciete ID-referenties, niet via cross-schema foreign keys. De applicatie wordt als één unit gedeployed.
 
 Verantwoording:
-We kozen niet voor microservices omdat dat complexer is voor een klein team van junios met weinig tijd. Experts zoals Sam Newman en Martin Fowlen zeggen ook dat microservices pas zinvol zijn bij grotere teams en systemen. Een modulaire monoliet is eenvoudiger te bouwen en kan later, als het platform groeit, stap voor stap omgezet worden naar microservices. 
+1. Gelaagde architectuur lijkt niet geschikt vanweze haar beperkte schaalbaarheid. We verwachten domeinwijzigingen (vb. nieuwe sporttype) en pieken in gebruik.
+2. Er is geen duidelijk plugins-scenario in dit project. Daarom lijkt microkernel niet geschikt.
+3. Een event-driven architectuur is interessant voor specifieke onderdelen, maar is als hoofdstijl te complex voor een team van juniors. 
+4. We kozen niet voor microservices omdat dat complexer is voor een klein team van juniors met weinig tijd. Experts zoals Sam Newman en Martin Fowler zeggen ook dat microservices pas zinvol zijn bij grotere teams en systemen [3, 4]. Een modulaire monoliet is eenvoudiger te bouwen en kan later, als het platform groeit, stap voor stap omgezet worden naar microservices. 
 
 ### Consequences
-Voordelen: 
+#### Positief
 - Eenvoudige deployment.
 - Makkelijker te testen.
 - Reserveren en betalen kunnen samen afgehandeld worden.
 
-Nadelen:
+#### Negatief
 - Als één onderdeel crasht, kan de hele app uitvallen.
-- Je kan niet 1 stuk apart opschalen.
+- Je kan niet 1 module apart opschalen.
 
-### Alternatives
-Bij een groter en/of een ervaringrijker team zouden we de microservices verkiezen. 
+### Alternatives Considered
+Bij een groter en/of een ervaringrijker team zouden we de microservices verkiezen. Dat zou ons de maximale scalability geven om enorme pieken op te vangen. 
 (nog online zoeken naar extra stijlen)
 
+### Uitbreiding
+Binnen elke module van onze modulaire monoliet kunnen we een zogenaamde "Hexagonal Architecture"-patroon toepassen. De domeinlogica wordt op die manier afgeschermd van externe technologie door ports en adapters [5, 6]. Dit kan de nadelen die we in ADR 2 en ADR 3 benoemen (zie verder) verkleinen. Wanneer we wisselen van betaalprovider of identity provider, dan moeten we een nieuwe adapter schrijven i.p.v. de business-logica verbouwen.
 # Verdere beslissingen
 ## **ADR 2:** Authenticatie en autorisatie via OpenID Connect met Keycloak
 
@@ -182,7 +194,7 @@ We hebben drie opties overwogen:
 - password-resetflows
 - OAuth2-server zelf draaien voor third-party integraties.
 2. Managed Identity Provider:  Auth0 of AWS Cognito (een betaalde dienst)
-3. Een zelf-gehoste open-source oplossing: Keycloak, ORY Hydra, Authelia.
+3. Een zelf-gehoste open-source oplossing: Keycloak [7], Authelia, ...
 
 ### Decision
 We kiezen voor OpenID Connect (OIDC) als protocol en **self-hosted Keycloak** als Identity Provider. Onze applicatie beheert zelf geen wachtwoorden (dat doet Keycloak volledig). Eén Keycloak-realm sportbooking bevat drie realm-rollen (end_user, club_admin, platform_admin) en wordt door alle clients (web, mobiel, eventuele toekomstige API-partners) gedeeld.
@@ -199,13 +211,13 @@ Verantwoording:
 3. We kiezen om 1 realm te implementeren. Een realm per gebruikerstype zou netter lijken qua scheiding, maar neemt praktische problemen met zich mee. Vb. Een clubbeheerder die ook gewoon wil boeken zou dan twee accounts nodig hebben.
 
 ### Consequences
-Wat mogelijk wordt:
+#### Positief
 - Sociale logins (Google, Apple) configureren via Keycloak's UI in plaats van per provider eigen code.
 - Tweestapsverificatie kan per rol aan- of uitgezet worden.
 - Ingebouwde wachtwoordbeleid en accountblokkering
 - Onze backend bewaart geen passwords, dus een DB-leak stelt geen credentials bloot.
 
-Risico's:
+#### Negatief
 - Als Keycloak uitvalt, kan niemand **nieuw** inloggen (bestaande logins blijven werken tot het token vervalt). We kunnen minimum twee Keycloak-instanties draaien om dit op te vangen.
 - Extra beheer: Keycloak heeft een eigen database, updates en monitoring nodig.
 - Migreren naar een andere identity provider later vereist dat alle gebruikers hun wachtwoord opnieuw instellen.
@@ -236,13 +248,13 @@ We kiezen voor MySQL als database. Het is relationeel, dus het zal goed met conn
 
 ### Consequences
 
-Wat wordt gemakkelijker of beter?
+#### Positief
 - Data-integriteit: Dankzij vaste relaties, kunnen tijdslots of boekingen niet ergens rondzweven in het systeem. Elke tijdslot of boeking moet een relatie hebben tot een gebruiker en terrein. Dit kan via `Foreign Keys`. In MongoDB zou data kunnen bestaan zonder relaties.
 - Zoekopdrachten: MySQL is enorm geschikt om ermee te zoeken wegens de sterke relaties. Joins maken queries efficiënt en betrouwbaar.
 
-Wat wordt moeilijker?
+#### Negatief
 - Flexibiliteit: Als we fundamenteel iets willen veranderen aan de gegevens, zal dit intensieve datamigraties nodig hebben. Dit is trager dan bij relatie-loze (of schemaloze) databases.
-- 
+
 ## **ADR 4:** Aantal replica's in productie (n=3) + 1 spare capacity voor beschikbaarheid
 
 ### Status
@@ -250,10 +262,10 @@ Wat wordt moeilijker?
 Geaccepteerd
 
 ### Context
-Om een uptime van 99.9% te halen, mag het systeem geen Single Point of Failure hebben. Als we slechts 1 instantie van de applicatie draaien en deze crasht of loopt vast, dan is het platform down voor alle gebruikers en leidt dit direct tot omzetverlies. er is een strategie nodig waarbij meerdere instanties tegelijk draaien zodat als er een wegvalt een andere instantie dit kan opvangen.
+Om een uptime van 99.9% te halen, mag het systeem geen Single Point of Failure hebben. Als we slechts 1 instantie van de applicatie draaien en deze crasht of loopt vast, dan is het platform down voor alle gebruikers en leidt dit direct tot omzetverlies. Er is een strategie nodig waarbij meerdere instanties tegelijk draaien zodat als er één wegvalt een andere instantie dit kan opvangen.
 
 ### Decision
-Ik heb besloten om standaard **3 replica's** van de modulaire monoliet horizontaal te schalen in het Docker Swarm cluster met 1 spare capacity node. Hierdoor detecteert het systeem automatisch via health checks wanneer een instantie faalt, waarna het verkeer direct wordt omgeleid naar een werkende replica zodat de gebruiker gewoon kan doorgaan.
+We hebben besloten om standaard **3 replica's** van de modulaire monoliet horizontaal te schalen in het Docker Swarm cluster met 1 spare capacity node. Hierdoor detecteert het systeem automatisch via health checks wanneer een instantie faalt, waarna het verkeer direct wordt omgeleid naar een werkende replica zodat de gebruiker gewoon kan doorgaan.
 
 1.  **Redundantie:** Door 3 replica's te gebruiken, kan er één instantie uitvallen terwijl de andere twee de volledige load blijven opvangen.
 2.  **Health Checking & Rerouting:** In combinatie met Docker Swarm worden replica's die vastlopen of gecrashed zijn automatisch gedetecteerd. Het verkeer wordt dan via rerouting onmiddellijk naar de overgebleven gezonde replica's gestuurd.
@@ -262,13 +274,15 @@ Ik heb besloten om standaard **3 replica's** van de modulaire monoliet horizonta
 ### Alternatives Considered
 *   **1 Replica:** Geen redundantie; bij elke fout ligt het hele platform plat.
 *   **2 Replica's:** Als er één uitvalt, moet de overblijvende instantie plotseling 100% meer verkeer verwerken, wat kan leiden tot een tweede crash. 3 replica's biedt een veiligere marge.
-*   **Microservices:** Een modulaire monoliet is 'beginner-friendlier' en vind ik beter passen bij deze opdracht.
+*   **Microservices:** Een modulaire monoliet is 'beginner-friendlier' en vinden we beter passen bij deze opdracht.
 
 ### Consequences
-*   **Positief:** Automatisch herstel van crashes binnen 30-40 seconden zonder dat de gebruiker het merkt.
-*   **Positief:** Ondersteunt zero-downtime updates, omdat er altijd replica's online blijven terwijl anderen worden bijgewerkt.
-*   **Positief:** Door bewust 3 replica's op 5 nodes te draaien, behouden we 1 node als 'spare capacity'. Bij een hardwarecrash van een volledige server kan Docker Swarm direct uitwijken naar deze lege node.
-*   **Negatief:** Iets hogere belasting op de MySQL database wegens de meerdere verbindingen en health checks.
+#### Positief
+* Automatisch herstel van crashes binnen 30-40 seconden zonder dat de gebruiker het merkt.
+* Ondersteunt zero-downtime updates, omdat er altijd replica's online blijven terwijl anderen worden bijgewerkt.
+* Door bewust 3 replica's op 5 nodes te draaien, behouden we 1 node als 'spare capacity'. Bij een hardwarecrash van een volledige server kan Docker Swarm direct uitwijken naar deze lege node.
+#### Negatief
+* Iets hogere belasting op de MySQL database wegens de meerdere verbindingen en health checks.
   
 ## **ADR 5:** Horizontale Scaling via Docker Swarm
 
@@ -278,7 +292,7 @@ Geaccepteerd
 
 ### Context
 
-Het sportterrein-reserveringsplatform verwacht sterk variërend verkeer. Conform de groepsbeslissing in ADR 1 gebruiken we een **Modulaire Monoliet** architectuur. Voor de scalability focus ik op het horizontaal schalen van deze monoliet om de load op het systeem op te vangen.
+Het sportterrein-reserveringsplatform verwacht sterk variërend verkeer. Conform de groepsbeslissing in ADR 1 gebruiken we een **Modulaire Monoliet** architectuur. Voor de scalability focussen we op het horizontaal schalen van deze monoliet om de load op het systeem op te vangen.
 
 - **Dagelijkse pieken**: werkdagen tussen 17:00 en 22:00.
 - **Seizoensgebonden**: meer boekingen in de zomer.
@@ -386,8 +400,7 @@ Angular's architectuur ondersteunt horizontaal schalen:
 - **Onafhankelijke deploy**: frontend kan op een andere server/CDN draaien dan de backend
 
 ### Consequences
-
-**Positief:**
+#### Positief
 - Angular's decoupled architectuur zorgt ervoor dat de frontend beschikbaar blijft ongeacht de backend-status
 - TypeScript en form validators voorkomen ongeldige data bij de bron, wat de Integrity POC versterkt
 - JWT-interceptors en route guards bieden directe integratie met Keycloak zonder extra configuratie
@@ -396,17 +409,127 @@ Angular's architectuur ondersteunt horizontaal schalen:
 
 # C4-model
 ## Systeemcontextdiagram
-![Systeemcontextdiagram van het platform](<Schermafbeelding 2026-05-16 160920.png>)
+![Systeemcontextdiagram van het platform](<systeem-context-diagram.png>)
+
+### Broncode:
+```
+workspace {
+    model {
+        sporter = person "Sporter" "Zoekt, vergelijkt en reserveert sportterreinen."
+        clubAdmin = person "Club Beheerder" "Beheert terreinen en beschikbaarheid."
+
+        keycloak = softwareSystem "Keycloak" "Identity & Access Management. Verifieert gebruikers en deelt JWT tokens uit."
+        stripe = softwareSystem "Stripe" "Payment Provider. Verwerkt betalingen."
+
+        sportPlatform = softwareSystem "Sportterrein Platform" "Centraal platform voor reservering van sportterreinen."
+
+        sporter -> sportPlatform "Boekt terreinen"
+        clubAdmin -> sportPlatform "Beheert terreinen"
+        sportPlatform -> keycloak "Valideert tokens"
+        sportPlatform -> stripe "Verwerkt betalingen"
+        sportPlatform -> sporter "Bevestigingsmail"
+        sportPlatform -> clubAdmin "Bevestigingsmail"
+    }
+
+    views {
+        systemContext sportPlatform "SystemContext" "Systeemcontext diagram voor Sportterrein Platform" {
+            include *
+            autoLayout
+        }
+    }
+}
+```
 ## Containerdiagram
 ![Containerdiagram van de applicatie](container-diagram.png)
+
+### Broncode:
+```
+workspace {
+    model {
+        user = person "Sporter" "Zoekt en reserveert sportterreinen."
+        clubAdmin = person "Club Beheerder" "Beheert terreinen en beschikbaarheid."
+        
+        keycloak = softwareSystem "Keycloak" "Identity & Access Management."
+        stripe = softwareSystem "Payment Provider" "Verwerkt betalingen."
+
+        softwareSystem = softwareSystem "Sportterrein Platform" {
+            webapp = container "Web Applicatie" "Angular/Next.js" "Biedt de interface aan gebruikers en clubs."
+            api = container "Modulaire Monoliet" "Python/Flask" "Bevat de business logica voor Catalog, Booking, Payment, Identity en Notifications."
+            db = container "MySQL Database" "MySQL 8.0" "Slaat alle relationele data op (gebruikers, terreinen, boekingen)."
+        }
+
+        user -> webapp "Gebruikt"
+        clubAdmin -> webapp "Beheert terreinen via"
+        
+        webapp -> api "Maakt API calls naar" "JSON/HTTPS"
+        api -> db "Leest van en schrijft naar" "SQL/TCP"
+        api -> keycloak "Valideert tokens bij" "OIDC"
+        api -> stripe "Initieert betalingen via" "HTTPS/API"
+    }
+
+    views {
+        container softwareSystem "Containers" "Het container diagram voor het Sportterrein Platform." {
+            include *
+            autoLayout
+        }
+    }
+}
+```
 ## Deploymentdiagram
 ![Deploymentdiagram via Docker Swarm](deployment-diagram.png)
 
-## Proofs of Concept
+### Broncode:
+```
+workspace {
+    model {
+        user = person "Sporter" "Wil een terrein boeken"
+        softwareSystem = softwareSystem "Sportterrein Platform" {
+            api = container "Modulaire Monoliet" "App logica" "Python/Flask"
+            db = container "MySQL Database" "Opslag" "MySQL"
+        }
 
-## Bronnen
-https://en.wikipedia.org/wiki/List_of_system_quality_attributes
-https://www.infoq.com/podcasts/microservices-benefits-supersede-caveats/
-https://martinfowler.com/bliki/MonolithFirst.html
-https://datatracker.ietf.org/doc/html/rfc6749
-https://www.keycloak.org/documentation
+        user -> api "Maakt boekingen"
+        api -> db "Slaat data op"
+
+        deploymentEnvironment "Production" {
+            deploymentNode "Docker Swarm Cluster" {
+                
+                deploymentNode "Manager Node 1" {
+                    containerInstance db
+                }
+                deploymentNode "Manager Node 2" {
+                    containerInstance api
+                }
+                deploymentNode "Manager Node 3" {
+                    containerInstance api
+                }
+                
+                deploymentNode "Worker Node 1" {
+                    containerInstance api
+                }
+                
+                # Hier maken we de 2de worker 'zichtbaar' met een placeholder
+                deploymentNode "Worker Node 2" "Lege node voor schaalbaarheid" {
+                    infrastructureNode "Spare Capacity" "Beschikbaar voor failover"
+                }
+            }
+        }
+    }
+
+    views {
+        deployment softwareSystem "Production" "VisibleDeployment" {
+            include *
+            autoLayout lr
+        }
+    }
+}
+```
+
+# Bronnen
+[1] https://en.wikipedia.org/wiki/List_of_system_quality_attributes <br>
+[2] https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions <br>
+[3] https://www.infoq.com/podcasts/microservices-benefits-supersede-caveats/ <br>
+[4] https://martinfowler.com/bliki/MonolithFirst.html <br>
+[5] https://alistair.cockburn.us/hexagonal-architecture <br>
+[6] https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/hexagonal-architecture.html <br>
+[7] https://www.keycloak.org/documentation <br>
