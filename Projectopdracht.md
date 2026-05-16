@@ -166,7 +166,6 @@ Verantwoording:
 
 ### Alternatives Considered
 Bij een groter en/of een ervaringrijker team zouden we de microservices verkiezen. Dat zou ons de maximale scalability geven om enorme pieken op te vangen. 
-(nog online zoeken naar extra stijlen)
 
 ### Uitbreiding
 Binnen elke module van onze modulaire monoliet kunnen we een zogenaamde "Hexagonal Architecture"-patroon toepassen. De domeinlogica wordt op die manier afgeschermd van externe technologie door ports en adapters [5, 6]. Dit kan de nadelen die we in ADR 2 en ADR 3 benoemen (zie verder) verkleinen. Wanneer we wisselen van betaalprovider of identity provider, dan moeten we een nieuwe adapter schrijven i.p.v. de business-logica verbouwen.
