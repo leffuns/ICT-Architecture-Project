@@ -64,9 +64,9 @@ Reservaties voor terreinen kunnen piekmomenten hebben zoals tijdens weekends of 
 - Open tijdsloten aanpaassen
 
 **Systeem**
-- Stuur notificaties/bevestigingsmails
-- Verwerk betaling
-- Update beschikbare tijdslot na een reservatie/annulering
+- Notificaties/bevestigingsmails sturen
+- Betalingen verwerken
+- Beschikbare tijdslot na een reservatie/annulering updaten
 
 ### Workflow
 **Workflow 1:**<br>
@@ -116,7 +116,7 @@ Taken:
 - Clubbeheerders notificeren bij boekingen/annulaties.
 
 ## Architecturale stijl
-### ADR 1: Keuze van architecturale stijl
+### **ADR 1:** Keuze van architecturale stijl
 #### Status
 Geaccepteerd
 
@@ -135,7 +135,7 @@ We kiezen voor een **modulaire monoliet** met vijf subdomeinen:
 - Identity (users, clubs, rollen)
 - Notifications (mail, push)
 
-Code wordt eerst per subdomein georganiseerd. Elke module bezit haar eigen DB-schema in één gedeelde instantie. Verwijzingen tussen modules verlopen via expliciete ID-referenties en interface-aanroepen, niet via cross-schema foreign keys. De applicatie wordt als één unit gedeployed.
+Code wordt eerst per subdomein georganiseerd. Elke module bezit haar eigen DB-schema in één gedeelde instantie. Verwijzingen tussen modules verlopen via expliciete ID-referenties, niet via cross-schema foreign keys. De applicatie wordt als één unit gedeployed.
 
 Verantwoording:
 We kozen niet voor microservices omdat dat complexer is voor een klein team van junios met weinig tijd. Experts zoals Sam Newman en Martin Fowlen zeggen ook dat microservices pas zinvol zijn bij grotere teams en systemen. Een modulaire monoliet is eenvoudiger te bouwen en kan later, als het platform groeit, stap voor stap omgezet worden naar microservices. 
@@ -155,18 +155,18 @@ Bij een groter en/of een ervaringrijker team zouden we de microservices verkieze
 (nog online zoeken naar extra stijlen)
 
 ## Verdere beslissingen
-### ADR 2 : Authenticatie en autorisatie via OpenID Connect met Keycloak
+### **ADR 2:** Authenticatie en autorisatie via OpenID Connect met Keycloak
 #### Status
 Accepted
 
 #### Context
-We bouwen een modulaire monoliet voor het reserveren van sporttijdslots, waarbij we 'Securability' als belangrijkste karakteristiek ervaren. Het platform heeft drie soorten gebruikers met verschillende rechten:
+We (een team van 5 pas afgestudeerden) bouwen een modulaire monoliet voor het reserveren van sporttijdslots, waarbij we 'Securability' als belangrijkste karakteristiek ervaren. Het platform heeft drie soorten gebruikers met verschillende rechten:
 
 - Eindgebruikers: boeken slots, betalen, beheren hun eigen profiel
 - Clubbeheerders: beheren beschikbaarheid, prijzen en terreinen van hun eigen club
 - Platformbeheerders: interne staff voor support en refunds
 
-De klant kan verwachten dat eindgebruikers kunnen inloggen via sociale accounts (Google, Apple), omdat dat in B2C-bookingplatformen een gebruikelijke UX-verwachting is. Later moet er ook een SSO-koppeling mogelijk zijn met sportbonden.
+De klant kan verwachten dat eindgebruikers kunnen inloggen via sociale accounts (Google, Apple), omdat dat in B2C-bookingplatformen een gebruikelijke UX-verwachting is.
 
 We hebben drie opties overwogen:
 
@@ -175,11 +175,10 @@ We hebben drie opties overwogen:
 - sessies beheren
 - password-resetflows
 - OAuth2-server zelf draaien voor third-party integraties.
-2. Managed Identity Provider:  Auth0 of AWS Cognito.
-3. Een zelf-gehoste open-source oplossing: Keycloak (de facto standaard), ORY Hydra, Authelia.
+2. Managed Identity Provider:  Auth0 of AWS Cognito (een betaalde dienst)
+3. Een zelf-gehoste open-source oplossing: Keycloak, ORY Hydra, Authelia.
 
 #### Decision
-
 We kiezen voor OpenID Connect (OIDC) als protocol en **self-hosted Keycloak** als Identity Provider. Onze applicatie beheert zelf geen wachtwoorden (dat doet Keycloak volledig). Eén Keycloak-realm sportbooking bevat drie realm-rollen (end_user, club_admin, platform_admin) en wordt door alle clients (web, mobiel, eventuele toekomstige API-partners) gedeeld.
 
 Authenticatieflows:
@@ -188,23 +187,27 @@ Authenticatieflows:
 
 Onze backend controleert bij elk verzoek het JWT-token via Keycloak. Rolcontroles zitten op één centrale plek, niet verspreid door de code.
 
-#### Consequences
+Verantwoording:
+1. Zelf authenticatie bouwen is voor ons team een onnodig risico. Alles moet correct en veilig geïmplementeerd worden, wat veel tijd en ervaring vraagt. De gevolgen van een foutje zijn hier te groot.
+2. We vermijden extra kosten door een zelf-gehoste oplossing te verkiezen boven een betalende service.
+3. We kiezen om 1 realm te implementeren. Een realm per gebruikerstype zou netter lijken qua scheiding, maar neemt praktische problemen met zich mee. Vb. Een clubbeheerder die ook gewoon wil boeken zou dan twee accounts nodig hebben.
 
+#### Consequences
 Wat mogelijk wordt:
 - Sociale logins (Google, Apple) configureren via Keycloak's UI in plaats van per provider eigen code.
-- MFA inschakelen per rol met één klik (verplicht voor platform_admin, optioneel voor de rest).
+- Tweestapsverificatie kan per rol aan- of uitgezet worden.
 - Ingebouwde wachtwoordbeleid en accountblokkering
-- Onze backend bewaart geen passwords, dus een DB-leak compromitteert geen credentials.
+- Onze backend bewaart geen passwords, dus een DB-leak stelt geen credentials bloot.
 
 Risico's:
-- Als Keycloak uitvalt, kan niemand nieuw inloggen (bestaande logins blijven werken tot het token vervalt). We kunnen minimum twee Keycloak-instanties draaien om dit op te vangen.
+- Als Keycloak uitvalt, kan niemand **nieuw** inloggen (bestaande logins blijven werken tot het token vervalt). We kunnen minimum twee Keycloak-instanties draaien om dit op te vangen.
 - Extra beheer: Keycloak heeft een eigen database, updates en monitoring nodig.
 - Migreren naar een andere identity provider later vereist dat alle gebruikers hun wachtwoord opnieuw instellen.
 
-### ADR 2 :
-### ADR 3 :
-### ADR 4 : 
-### ADR 5 :
+### **ADR 3:** ...
+### **ADR 4:** ...
+### **ADR 5:** ...
+### **ADR 6:** ...
 
 ## C4-model
 ### Systeemcontextdiagram
