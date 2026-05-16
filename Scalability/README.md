@@ -1,10 +1,10 @@
-# Proof of Concept: Scalability
+# Proof of Concept: Scalability (Modulaire Monoliet)
 
 ## Doel
 
 Deze Proof of Concept beantwoordt de volgende technische vraag:
 
-**Kan een booking-API voor sportterreinreserveringen horizontaal schalen via Docker Swarm replicas, terwijl data-integriteit (geen dubbele boekingen) behouden blijft onder gelijktijdige belasting?**
+**Kan de Modulaire Monoliet horizontaal schalen via Docker Swarm replicas, terwijl data-integriteit (geen dubbele boekingen) in MySQL behouden blijft onder hoge gelijktijdige belasting?**
 
 ## Architectuur
 
@@ -22,7 +22,7 @@ Deze Proof of Concept beantwoordt de volgende technische vraag:
                     │   └──┬──┘└──┬──┘└──┬──┘      │
                     │      │      │      │          │
                     │   ┌──▼──────▼──────▼──┐      │
-                    │   │   PostgreSQL DB    │      │
+                    │   │      MySQL DB      │      │
                     │   │  (SELECT FOR UPDATE│      │
                     │   │   = geen dubbele   │      │
                     │   │     boekingen)     │      │
@@ -32,11 +32,11 @@ Deze Proof of Concept beantwoordt de volgende technische vraag:
 
 ### Overzicht van de Componenten
 
-#### Booking API
-Deze REST API (gebouwd met **Python Flask** en **Gunicorn**) vormt de kern van de POC. Het handelt de logica voor het bekijken en boeken van tijdslots af. In onze opstelling draait deze service met meerdere replicas achter de Docker Swarm load balancer om de horizontale schaalbaarheid aan te tonen.
+#### Booking Module (in de Monoliet)
+Deze REST API (gebouwd met **Python Flask** en **Gunicorn**) vormt de Booking module van onze monoliet. Het handelt de logica voor het bekijken en boeken van tijdslots af. In onze opstelling draait de volledige applicatie met meerdere replicas achter de Docker Swarm load balancer om de horizontale schaalbaarheid aan te tonen.
 
 #### Database
-We gebruiken **PostgreSQL 15** voor de persistente opslag. De database is cruciaal voor de data-integriteit; door middel van `SELECT ... FOR UPDATE` zorgen we ervoor dat rijen vergrendeld worden tijdens een transactie, wat race-conditions voorkomt.
+We gebruiken **MySQL 8.0** voor de persistente opslag. De database is cruciaal voor de data-integriteit; door middel van `SELECT ... FOR UPDATE` zorgen we ervoor dat rijen vergrendeld worden tijdens een transactie, wat race-conditions voorkomt.
 
 #### Loadtest Container
 Dit is een hulp-container gebaseerd op **Alpine** met tools zoals `hey` en `curl`. Hiermee vuren we geautomatiseerde tests af op de API om te meten hoe de load balancing en throughput zich gedragen onder druk.
@@ -79,7 +79,7 @@ Je zou moeten zien:
 ```
 ID         NAME               MODE         REPLICAS   IMAGE
 ...        poc_booking-api    replicated   3/3        poc-booking-api:latest
-...        poc_db             replicated   1/1        postgres:15-alpine
+...        poc_db             replicated   1/1        mysql:8.0
 ...        poc_loadtest       replicated   1/1        poc-loadtest:latest
 ```
 
@@ -102,32 +102,6 @@ Het script voert drie tests uit:
 2. **Throughput Test**: Stuurt 500 requests met 50 gelijktijdige connecties naar `GET /slots` en meet requests/seconde.
 
 3. **Concurrency / Data Integriteit Test**: Stuurt 30 gelijktijdige boekingsverzoeken naar hetzelfde tijdslot. Precies 1 boeking mag slagen (HTTP 201), de rest moet een conflict krijgen (HTTP 409).
-
-### Handmatige tests
-
-Je kan ook handmatig de API testen:
-
-```bash
-# Bekijk beschikbare terreinen
-curl http://localhost:8080/courts
-
-# Bekijk beschikbare slots
-curl http://localhost:8080/slots
-
-# Bekijk slots voor een specifiek terrein
-curl http://localhost:8080/slots?court_id=1
-
-# Boek een tijdslot
-curl -X POST http://localhost:8080/book \
-  -H "Content-Type: application/json" \
-  -d '{"slot_id": 1, "user": "Jef"}'
-
-# Controleer welke replica het verzoek afhandelt
-curl http://localhost:8080/info
-
-# Reset alle boekingen (voor herhaalde tests)
-curl -X POST http://localhost:8080/reset
-```
 
 ## Scalability Demonstratie
 
@@ -163,7 +137,7 @@ docker exec -it $(docker ps -q -f name=poc_loadtest) /bin/sh -c "./run-test.sh"
 Bij het uitvoeren van de schaalbaarheidstest verwachten we de volgende trends:
 *   **1 Replica:** Dit is onze baseline. We verwachten een normale throughput en zien slechts één hostname terugkomen in de logs van de load balancer.
 *   **3 Replicas:** De throughput zou ongeveer 2 tot 3 keer hoger moeten liggen dan de baseline. De requests worden hierbij verdeeld over drie verschillende containers.
-*   **5 Replicas:** Hier verwachten we de maximale winst (ongeveer 4 tot 5 keer de baseline), afhankelijk van de belasting op de PostgreSQL database.
+*   **5 Replicas:** Hier verwachten we de maximale winst, afhankelijk van de belasting op de MySQL database.
 
 ### Data integriteit bij alle schaalgroottes
 
@@ -179,7 +153,7 @@ Dit bewijst dat de `SELECT ... FOR UPDATE` strategie correct werkt, ongeacht het
 Tijdens het ontwerpen van deze POC hebben we de volgende keuzes gemaakt:
 
 *   **Flask + Gunicorn:** Deze stack is snel op te zetten. Gunicorn biedt meerdere workers per container (verticale schaling), terwijl Swarm de horizontale schaling tussen de containers overneemt.
-*   **PostgreSQL:** Een betrouwbare, ACID-compliant database is essentieel voor correcte boekingslogica.
+*   **MySQL:** Een betrouwbare, ACID-compliant database is essentieel voor correcte boekingslogica. We gebruiken de door het team gekozen MySQL engine.
 *   **Pessimistic locking:** Door gebruik te maken van `SELECT ... FOR UPDATE` garanderen we dat er nooit twee mensen tegelijkertijd hetzelfde tijdslot kunnen claimen, zelfs niet als ze via verschillende API-replicas binnenkomen.
 *   **Stateless API:** De containers slaan geen lokale status of sessies op. Hierdoor kan elk verzoek door elke willekeurige replica worden afgehandeld, wat horizontale schaling mogelijk maakt.
 *   **Docker Swarm:** Swarm is de gevraagde technologie voor de POC. Het is eenvoudiger te beheren dan Kubernetes, maar biedt alle nodige functies voor service-replicatie en load balancing.

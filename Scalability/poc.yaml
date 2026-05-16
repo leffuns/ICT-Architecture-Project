@@ -1,13 +1,13 @@
 # Deploy met: docker stack deploy -f poc.yaml poc
 # Deze stack bevat:
-#   - booking-api: Flask API met meerdere replicas
-#   - db: PostgreSQL database
+#   - booking-api: Flask API (Microservice) met meerdere replicas
+#   - db: MySQL 8.0 database
 #   - loadtest: Container voor het uitvoeren van load tests
 
 version: "3.8"
 
 services:
-  # Booking API - De service die horizontaal geschaald wordt
+  # Booking API - De microservice die horizontaal geschaald wordt
   booking-api:
     image: poc-booking-api:latest
     ports:
@@ -27,8 +27,6 @@ services:
         reservations:
           cpus: "0.10"
           memory: 64M
-      # Health check: Swarm vervangt ongezonde containers automatisch
-      # Dit demonstreert self-healing, een bijkomend voordeel van orchestratie
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 10s
@@ -36,20 +34,25 @@ services:
       retries: 3
       start_period: 15s
     environment:
-      - DATABASE_URL=postgresql://poc:poc@db:5432/bookings
+      - DB_HOST=db
+      - DB_USER=poc
+      - DB_PASSWORD=poc
+      - DB_NAME=bookings
     networks:
       - poc-network
     depends_on:
       - db
-  # PostgreSQL Database
+
+  # MySQL Database
   db:
-    image: postgres:15-alpine
+    image: mysql:8.0
     environment:
-      POSTGRES_DB: bookings
-      POSTGRES_USER: poc
-      POSTGRES_PASSWORD: poc
+      MYSQL_DATABASE: bookings
+      MYSQL_USER: poc
+      MYSQL_PASSWORD: poc
+      MYSQL_ROOT_PASSWORD: root
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data-mysql:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     deploy:
       replicas: 1
@@ -61,12 +64,13 @@ services:
           cpus: "1.0"
           memory: 512M
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U poc -d bookings"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "poc", "-ppoc"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - poc-network
+
   # Test Container
   loadtest:
     image: poc-loadtest:latest
@@ -89,4 +93,4 @@ networks:
     driver: overlay
 
 volumes:
-  db-data:
+  db-data-mysql:

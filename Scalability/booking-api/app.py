@@ -3,15 +3,14 @@ import socket
 import time
 
 from flask import Flask, jsonify, request
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import mysql.connector
 
 app = Flask(__name__)
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://poc:poc@db:5432/bookings"
-)
+DB_HOST = os.environ.get("DB_HOST", "db")
+DB_USER = os.environ.get("DB_USER", "poc")
+DB_PASSWORD = os.environ.get("DB_PASSWORD", "poc")
+DB_NAME = os.environ.get("DB_NAME", "bookings")
 
 # Identificatie van deze specifieke container/replica
 HOSTNAME = socket.gethostname()
@@ -19,7 +18,12 @@ HOSTNAME = socket.gethostname()
 
 def get_db_connection():
     """Maak een nieuwe database connectie aan."""
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    return mysql.connector.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME
+    )
 
 
 def wait_for_db(max_retries=30, delay=2):
@@ -27,14 +31,21 @@ def wait_for_db(max_retries=30, delay=2):
     for attempt in range(max_retries):
         try:
             conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("SELECT 1")
+            cur.fetchone()
+            cur.close()
             conn.close()
             print(f"[{HOSTNAME}] Database is beschikbaar na {attempt + 1} pogingen.")
             return True
-        except psycopg2.OperationalError:
+        except mysql.connector.Error:
             print(f"[{HOSTNAME}] Wachten op database... poging {attempt + 1}/{max_retries}")
             time.sleep(delay)
     raise Exception("Kan geen verbinding maken met de database.")
 
+
+# Wacht op DB bij het importeren (nodig voor Gunicorn)
+wait_for_db()
 
 # ---------------------------------------------------------------------------
 # ENDPOINTS
@@ -50,10 +61,12 @@ def health():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT 1")
+        cur.fetchone()
         cur.close()
         conn.close()
         return jsonify({"status": "healthy", "hostname": HOSTNAME}), 200
     except Exception as e:
+        print(f"[{HOSTNAME}] Health check failed: {str(e)}")
         return jsonify({"status": "unhealthy", "error": str(e)}), 503
 
 
@@ -74,7 +87,7 @@ def info():
 def get_courts():
     """Geeft een lijst van alle beschikbare sportterreinen."""
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(dictionary=True)
     cur.execute("SELECT id, name, sport FROM courts ORDER BY id")
     courts = cur.fetchall()
     cur.close()
@@ -93,7 +106,7 @@ def get_slots():
     court_id = request.args.get("court_id", type=int)
 
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(dictionary=True)
 
     if court_id:
         cur.execute("""
@@ -153,7 +166,7 @@ def book_slot():
     try:
         # Begin een transactie
         conn.autocommit = False
-        cur = conn.cursor()
+        cur = conn.cursor(dictionary=True)
 
         # SELECT FOR UPDATE: vergrendelt de rij tot het einde van de transactie.
         # Andere transacties die hetzelfde slot willen boeken moeten wachten.
@@ -230,5 +243,4 @@ def reset_bookings():
     })
 
 if __name__ == "__main__":
-    wait_for_db()
     app.run(host="0.0.0.0", port=5000)
