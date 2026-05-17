@@ -4,16 +4,16 @@ workspace {
         clubAdmin = person "Club Beheerder" "Beheert terreinen en beschikbaarheid."
 
         keycloak = softwareSystem "Keycloak" "Identity & Access Management. Verifieert gebruikers en deelt JWT tokens uit."
-        stripe = softwareSystem "Stripe" "Payment Provider. Verwerkt betalingen."
 
         sportPlatform = softwareSystem "Sportterrein Platform" "Centraal platform voor reservering van sportterreinen."
 
         sporter -> sportPlatform "Boekt terreinen"
         clubAdmin -> sportPlatform "Beheert terreinen"
+        sporter -> sportPlatform "betalingen overmaken"
         sportPlatform -> keycloak "Valideert tokens"
-        sportPlatform -> stripe "Verwerkt betalingen"
         sportPlatform -> sporter "Bevestigingsmail"
         sportPlatform -> clubAdmin "Bevestigingsmail"
+        keycloak -> sportPlatform "JTW tokens"
     }
 
     views {
