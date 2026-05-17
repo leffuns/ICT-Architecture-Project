@@ -1,7 +1,7 @@
 # **Projectopdracht ICT Architecture**
 Groepsleden (2ITAI1):
 - Louis Boulez (157941)
-- Jonas Lemmens (*studentennummer*)
+- Jonas Lemmens (159672)
 - Angeles Osier (144610)
 - Hajar Takhrifa (163393)
 - Viktor Van Deun (159049)
