@@ -238,7 +238,7 @@ We bespraken MongoDB omdat we ervaring ermee hebben en omdat boekingen constant 
 - Elke boeking heeft een gebruiker.
 - Elk gebruikt tijdslot heeft een boeking.
 - Tijdslots behoren enkel tot hun terrein.
-- Terreinen behoren alleen tot 1 club (We negeren voor nu terreinen die gedeeltelijk behoren tot meerdere clubs in een soort beaurocratisch systeem van shareholders.)
+- Terreinen behoren alleen tot 1 club (We negeren voor nu terreinen die gedeeltelijk behoren tot meerdere clubs in een soort bureaucratisch systeem van shareholders.)
 - Elke gebruiker en terrein hebben private betalingsgegevens.
 
 ### Decision
@@ -452,7 +452,7 @@ workspace {
         stripe = softwareSystem "Payment Provider" "Verwerkt betalingen."
 
         softwareSystem = softwareSystem "Sportterrein Platform" {
-            webapp = container "Web Applicatie" "Angular/Next.js" "Biedt de interface aan gebruikers en clubs."
+            webapp = container "Web Applicatie" "Angular" "Biedt de interface aan gebruikers en clubs."
             api = container "Modulaire Monoliet" "Python/Flask" "Bevat de business logica voor Catalog, Booking, Payment, Identity en Notifications."
             db = container "MySQL Database" "MySQL 8.0" "Slaat alle relationele data op (gebruikers, terreinen, boekingen)."
         }
