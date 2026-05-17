@@ -16,7 +16,7 @@ Gebruikers moeten 24/7 kunnen boeken en clubs moeten altijd toegang hebben tot h
 
 **2. Terreinen huren**
 *   **Workflow:** Een gebruiker selecteert een tijdslot en plaatst een tijdelijke reservatie.
-*   **Availability-taak:** Het garanderen van data-integriteit tijdens een failover. Ik zorg dat we **Optimistic Locking** gebruiken in MySQL om dit te voorkomen.
+*   **Availability-taak:** Het garanderen van data-integriteit tijdens een failover. Ik zorg dat we **Pessimistic Locking** gebruiken in MySQL om dit te voorkomen.
 
 **3. Betalingsbeheer**
 *   **Workflow:** De gebruiker rekent de reservatie af via een externe provider.
@@ -32,9 +32,8 @@ Gebruikers moeten 24/7 kunnen boeken en clubs moeten altijd toegang hebben tot h
 
 | Karakteristiek | Relatie |
 |---|---|
-| **Integrity** (Angeles) | Bij failover mogen geen dubbele boekingen ontstaan. Ik zorg dat we **Optimistic Locking** gebruiken in MySQL om dit te voorkomen. |
+| **Integrity** (Angeles) | Bij failover mogen geen dubbele boekingen ontstaan. We moeten zorgen dat we **Pessimistic Locking** gebruiken in MySQL om dit te voorkomen. |
 | **Scalability** (Viktor) | Meer replica's kunnen ook gebruikt worden voor betere availability door de heathchecks en rerouting en ook voor betere performance onder load. |
-| **Responsiveness** (Hajar) | de health checks hebben een interval van 10s. Dit heb ik gedaan voor de balans tussen snelle detectie van falen en niet teveel  belasten van de service. |
 
 ---
 

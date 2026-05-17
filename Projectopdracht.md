@@ -1,10 +1,10 @@
 # **Projectopdracht ICT Architecture**
 Groepsleden (2ITAI1):
-- Louis Boulez (*studentennummer*)
-- Jonas Lemmens (*studentennummer*)
+- Louis Boulez (157941)
+- Jonas Lemmens (159672)
 - Angeles Osier (144610)
 - Hajar Takhrifa (163393)
-- Viktor Van Deun (*studentennummer*)
+- Viktor Van Deun (159049)
 
 # Opgave
 "Veronderstel in de eerste plaats dat de afgestudeerde versie van je team deze opdracht productieklaar moet maken op een half jaar tijd. In je ADR's kan je vermelden welke beslissingen anders zouden zijn als je team en je budget groter / kleiner waren. Voor de vraag "wat de klant waarschijnlijk belangrijk vindt" kijk je naar de gegeven voorbeelden.<br>
@@ -238,7 +238,7 @@ We bespraken MongoDB omdat we ervaring ermee hebben en omdat boekingen constant 
 - Elke boeking heeft een gebruiker.
 - Elk gebruikt tijdslot heeft een boeking.
 - Tijdslots behoren enkel tot hun terrein.
-- Terreinen behoren alleen tot 1 club (We negeren voor nu terreinen die gedeeltelijk behoren tot meerdere clubs in een soort beaurocratisch systeem van shareholders.)
+- Terreinen behoren alleen tot 1 club (We negeren voor nu terreinen die gedeeltelijk behoren tot meerdere clubs in een soort bureaucratisch systeem van shareholders.)
 - Elke gebruiker en terrein hebben private betalingsgegevens.
 
 ### Decision
@@ -452,7 +452,7 @@ workspace {
         stripe = softwareSystem "Payment Provider" "Verwerkt betalingen."
 
         softwareSystem = softwareSystem "Sportterrein Platform" {
-            webapp = container "Web Applicatie" "Angular/Next.js" "Biedt de interface aan gebruikers en clubs."
+            webapp = container "Web Applicatie" "Angular" "Biedt de interface aan gebruikers en clubs."
             api = container "Modulaire Monoliet" "Python/Flask" "Bevat de business logica voor Catalog, Booking, Payment, Identity en Notifications."
             db = container "MySQL Database" "MySQL 8.0" "Slaat alle relationele data op (gebruikers, terreinen, boekingen)."
         }

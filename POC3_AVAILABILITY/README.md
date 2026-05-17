@@ -18,7 +18,7 @@
 
 ```powershell
 docker swarm init
-cd poc-availability
+cd POC3-AVAILABILITY
 docker build -t poc-booking-api:latest ./booking-api
 docker stack deploy --compose-file poc.yaml poc
 ```
