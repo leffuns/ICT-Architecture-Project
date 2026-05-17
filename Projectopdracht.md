@@ -1,10 +1,10 @@
 # **Projectopdracht ICT Architecture**
 Groepsleden (2ITAI1):
-- Louis Boulez (*studentennummer*)
+- Louis Boulez (157941)
 - Jonas Lemmens (*studentennummer*)
 - Angeles Osier (144610)
 - Hajar Takhrifa (163393)
-- Viktor Van Deun (*studentennummer*)
+- Viktor Van Deun (159049)
 
 # Opgave
 "Veronderstel in de eerste plaats dat de afgestudeerde versie van je team deze opdracht productieklaar moet maken op een half jaar tijd. In je ADR's kan je vermelden welke beslissingen anders zouden zijn als je team en je budget groter / kleiner waren. Voor de vraag "wat de klant waarschijnlijk belangrijk vindt" kijk je naar de gegeven voorbeelden.<br>
