@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  angular-app:
+    image: angular-app:latest
+    ports:
+      - "4200:4200"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure

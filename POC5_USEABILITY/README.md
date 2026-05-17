@@ -1,13 +1,27 @@
-Om poc te draaien
-in terminal
-```
-docker build -t angular-app .
+# POC 5: Usability
+
+## Setup
+
+Bouw eerst de Angular Docker-image lokaal:
+```bash
+docker build -t angular-app:latest .
 ```
 
-container starten met :
-
+Start daarna de stack in Docker Swarm:
+```bash
+docker stack deploy -c poc.yaml poc
 ```
-docker run -p 4200:4200 angular-app
-```
 
-naar browser: http://localhost:4200/
+*(Merk op: als je cluster `-f` in plaats van `-c` verwacht voor stack deploys, gebruik dan `docker stack deploy -f poc.yaml poc`)*
+
+## Testen
+
+Open je browser en navigeer naar:
+`http://localhost:4200/`
+
+## Opruimen
+
+Verwijder de stack uit het cluster:
+```bash
+docker stack rm poc
+```
