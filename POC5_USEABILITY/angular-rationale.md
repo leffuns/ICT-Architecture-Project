@@ -2,6 +2,10 @@
 
 Hierin wordt verder uitgelegd waarom angular gekozen is.
 
+De huidige poc toont meer hoe de app als gebruiker werkt.
+
+Volgende code en functies zijn niet geïmplementeerd aangezien het een poc is.
+
 ## Overzicht
 
 Angular is gekozen als frontend-framework vanwege de sterke integratie met de andere architectuurkarakteristieken. De frontend werkt naadloos samen met de Python/Flask backend en ondersteunt de vereisten van Availability, Integrity, Security en Scalability.
