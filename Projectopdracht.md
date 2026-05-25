@@ -408,7 +408,7 @@ Angular's architectuur ondersteunt horizontaal schalen:
 
 # C4-model
 ## Systeemcontextdiagram
-![Systeemcontextdiagram van het platform](<systeem-context-diagram.png>)
+![Systeemcontextdiagram van het platform](<Systeemcontext-diagram.png>)
 
 ### Broncode:
 ```
